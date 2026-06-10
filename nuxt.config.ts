@@ -3,6 +3,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   devServer: { port: 3700 },
   modules: ['@nuxt/ui'],
+  colorMode: {
+    preference: 'light',
+    fallback: 'light',
+    classSuffix: '',
+  },
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL ?? '',

@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+:root, html {
+  color-scheme: light only !important;
+}
+
 :root {
   --color-brand-primary: #4ED7F1;
   --color-brand-secondary: #FFFA8D;
