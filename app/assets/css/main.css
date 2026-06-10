@@ -1,8 +1,25 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-:root, html {
-  color-scheme: light only !important;
+:root, html, html.dark, html[data-color-mode="dark"], [data-theme="dark"] {
+  color-scheme: light !important;
+
+  /* NuxtUI v4 color tokens — paksa semua ke light */
+  --color-gray-950: #030712;
+  --color-gray-900: #111827;
+  --ui-bg:           #ffffff !important;
+  --ui-bg-muted:     #f9fafb !important;
+  --ui-bg-elevated:  #ffffff !important;
+  --ui-bg-accented:  #f1f5f9 !important;
+  --ui-bg-inverted:  #1e293b !important;
+  --ui-border:       #e5e7eb !important;
+  --ui-border-muted: #f3f4f6 !important;
+  --ui-border-accented: #d1d5db !important;
+  --ui-text:         #111827 !important;
+  --ui-text-muted:   #6b7280 !important;
+  --ui-text-toned:   #374151 !important;
+  --ui-text-highlighted: #030712 !important;
+  --ui-text-dimmed:  #9ca3af !important;
 }
 
 :root {
@@ -32,6 +49,32 @@ html, body {
 /* Class khusus untuk brand name */
 .font-brand {
   font-family: var(--font-playwrite);
+}
+
+/* ── Force white backgrounds — semua card, modal, popover, dropdown ── */
+
+/* NuxtUI CSS variables — paksa ke light */
+:root {
+  --ui-bg: #ffffff !important;
+  --ui-bg-elevated: #ffffff !important;
+  --ui-bg-accented: #f8fafc !important;
+  --ui-bg-inverted: #0f172a !important;
+  --ui-text: #1a2332 !important;
+  --ui-text-muted: #6b7280 !important;
+  --ui-border: #e5e7eb !important;
+  --ui-border-accented: #d1d5db !important;
+}
+
+/* Input, select, textarea — paksa putih */
+input:not(aside input), textarea:not(aside textarea), select:not(aside select) {
+  background-color: #ffffff !important;
+  color: #1a2332 !important;
+}
+
+/* Pastikan semua text tetap gelap (kecuali sidebar yang punya warnanya sendiri) */
+main p, main span, main div, main h1, main h2, main h3, main h4,
+main label, main td, main th, main li {
+  color: inherit;
 }
 
 /* ── Driver.js Tour ── */
