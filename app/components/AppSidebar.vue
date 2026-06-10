@@ -1,11 +1,27 @@
 <template>
-  <aside id="tour-sidebar" class="fixed left-0 top-0 bottom-0 flex flex-col z-20" style="width:240px; background:#4ED7F1;">
+  <aside
+    :class="[
+      'fixed left-0 top-0 bottom-0 flex flex-col z-30 transition-transform duration-300 ease-in-out',
+      sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+    ]"
+    style="width:240px; background:#4ED7F1;"
+  >
     <!-- Logo -->
-    <div class="flex items-center justify-center py-4 px-3" style="border-bottom:1px solid rgba(15,38,53,0.1);">
-      <img v-if="logoExist" :src="logoSrc" alt="Alvian's Kitchen" class="h-20 w-20 object-contain rounded-full" style="background:#0a0a3e;" @error="logoExist = false" />
-      <div v-else class="h-20 w-20 rounded-full flex items-center justify-center" style="background:#0a0a3e; border:2px solid #A8F1FF;">
-        <span style="font-size:1.8rem;">🍽️</span>
+    <div class="flex items-center justify-between py-4 px-3" style="border-bottom:1px solid rgba(15,38,53,0.1);">
+      <div class="flex items-center justify-center flex-1">
+        <img v-if="logoExist" :src="logoSrc" alt="Alvian's Kitchen" class="h-16 w-16 object-contain rounded-full" style="background:#0a0a3e;" @error="logoExist = false" />
+        <div v-else class="h-16 w-16 rounded-full flex items-center justify-center" style="background:#0a0a3e; border:2px solid #A8F1FF;">
+          <span style="font-size:1.4rem;">🍽️</span>
+        </div>
       </div>
+      <!-- Close button — mobile only -->
+      <button
+        class="lg:hidden flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/10 flex-shrink-0"
+        style="color:#0f2635;"
+        @click="sidebarOpen = false"
+      >
+        <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+      </button>
     </div>
 
     <!-- Brand text -->
@@ -26,6 +42,7 @@
           ? 'background:#A8F1FF; color:#0f2635; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,0.08);'
           : 'color:#0f3a4a; font-weight:500;'"
         :class="route.path !== item.to ? 'hover:bg-black/10' : ''"
+        @click="sidebarOpen = false"
       >
         <span class="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0" style="background:#FFFA8D;">{{ item.icon }}</span>
         <span>{{ item.label }}</span>
@@ -40,6 +57,7 @@
           ? 'background:#A8F1FF; color:#0f2635; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,0.08);'
           : 'color:#0f3a4a; font-weight:500;'"
         :class="route.path !== '/admin/users' ? 'hover:bg-black/10' : ''"
+        @click="sidebarOpen = false"
       >
         <span class="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0" style="background:#FFFA8D;">👥</span>
         <span>Kelola User</span>
@@ -72,6 +90,7 @@
 
 <script setup lang="ts">
 const route = useRoute()
+const sidebarOpen = useSidebar()
 const logoSrc = '/logo.png'
 const logoExist = ref(true)
 const { startTour } = useAppTour()

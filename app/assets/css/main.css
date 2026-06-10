@@ -122,7 +122,7 @@ main label, main td, main th, main li {
 .alvian-tour-popover .driver-popover-progress-text { color: #6b7280 !important; font-size: 0.75rem !important; }
 
 /* ── Tabel ── */
-table { width: 100%; border-collapse: collapse; }
+table { width: 100%; border-collapse: collapse; min-width: 480px; }
 thead th {
   background: var(--color-brand-third);
   color: #0f4a5c;
@@ -132,7 +132,18 @@ thead th {
   letter-spacing: 0.06em;
   padding: 0.7rem 1rem;
   text-align: left;
+  white-space: nowrap;
 }
 tbody tr { border-bottom: 1px solid #e0f4fa; }
 tbody tr:hover { background: #f0fbff; }
 tbody td { padding: 0.75rem 1rem; font-size: 0.875rem; }
+
+/* ── Responsive ── */
+/* Pastikan overflow-x-auto bekerja di semua UCard body */
+.overflow-x-auto { -webkit-overflow-scrolling: touch; }
+
+/* Mobile: padding lebih kecil */
+@media (max-width: 639px) {
+  tbody td { padding: 0.6rem 0.75rem; }
+  thead th { padding: 0.6rem 0.75rem; }
+}

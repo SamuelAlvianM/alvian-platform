@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-5">
-    <div id="klien-header" class="flex items-center justify-between">
+    <div id="klien-header" class="flex items-start sm:items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-gray-800">Klien & Toko</h1>
         <p class="text-sm text-gray-500 mt-0.5">Daftar toko dan klien yang memesan produk Alvian's Kitchen</p>
@@ -8,7 +8,7 @@
       <UButton id="btn-tambah-klien" icon="i-heroicons-plus" @click="openTambah">Tambah Klien</UButton>
     </div>
 
-    <div v-if="pending" class="grid grid-cols-3 gap-4">
+    <div v-if="pending" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="i in 3" :key="i" class="rounded-xl border border-gray-100 p-4 space-y-3" style="background:#fff;">
         <div class="flex items-start justify-between">
           <USkeleton class="h-11 w-11 rounded-full" />
@@ -24,7 +24,7 @@
       <p class="font-semibold text-gray-500">Belum ada klien terdaftar</p>
       <p class="text-sm text-gray-400 mt-1">Klik <strong>"Tambah Klien"</strong> untuk mendaftarkan toko pertama</p>
     </div>
-    <div v-else class="grid grid-cols-3 gap-4">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <UCard v-for="k in data" :key="k.id">
         <div class="flex items-start justify-between mb-3">
           <div class="w-11 h-11 rounded-full flex items-center justify-center text-xl flex-shrink-0" style="background:#FFFA8D;">🏪</div>

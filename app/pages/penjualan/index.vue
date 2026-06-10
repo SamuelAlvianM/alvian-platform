@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <div id="penjualan-header" class="flex items-center justify-between">
+    <div id="penjualan-header" class="flex items-start sm:items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-gray-800">Penjualan</h1>
         <p class="text-sm text-gray-500 mt-0.5">Catat transaksi dan lihat laporan per klien</p>
@@ -32,10 +32,10 @@
 
     <!-- Filter (shared) -->
     <UCard id="filter-penjualan">
-      <div class="flex items-end gap-3 flex-wrap">
+      <div class="flex items-end gap-2 flex-wrap">
         <UFormField label="Dari Tanggal">
           <UPopover>
-            <UButton color="neutral" variant="outline" icon="i-heroicons-calendar-days" class="w-44 justify-start">
+            <UButton color="neutral" variant="outline" icon="i-heroicons-calendar-days" class="w-full sm:w-44 justify-start">
               {{ filterDari ? formatTanggal(filterDari) : 'Pilih tanggal' }}
             </UButton>
             <template #content>
@@ -45,7 +45,7 @@
         </UFormField>
         <UFormField label="Sampai Tanggal">
           <UPopover>
-            <UButton color="neutral" variant="outline" icon="i-heroicons-calendar-days" class="w-44 justify-start">
+            <UButton color="neutral" variant="outline" icon="i-heroicons-calendar-days" class="w-full sm:w-44 justify-start">
               {{ filterSampai ? formatTanggal(filterSampai) : 'Pilih tanggal' }}
             </UButton>
             <template #content>
@@ -60,7 +60,7 @@
             value-key="id"
             label-key="label"
             placeholder="Semua klien"
-            class="w-48"
+            class="w-full sm:w-48"
           />
         </UFormField>
         <div class="flex gap-2">
@@ -75,7 +75,7 @@
     <!-- ═══════════════════════════════════════════ -->
     <template v-if="activeTab === 'transaksi'">
       <!-- Summary Cards -->
-      <div v-if="penjualanData?.length" class="grid grid-cols-4 gap-4">
+      <div v-if="penjualanData?.length" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <UCard>
           <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Total Transaksi</div>
           <div class="text-3xl font-bold text-gray-800">{{ penjualanData.length }}</div>
@@ -113,7 +113,8 @@
           <div class="text-4xl mb-3">🛒</div>
           <p class="font-semibold text-gray-500">Belum ada data penjualan</p>
         </div>
-        <table v-else>
+        <div v-else class="overflow-x-auto">
+        <table>
           <thead>
             <tr>
               <th>Tanggal</th>
@@ -154,6 +155,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </UCard>
     </template>
 
@@ -162,7 +164,7 @@
     <!-- ═══════════════════════════════════════════ -->
     <template v-if="activeTab === 'laporan'">
       <!-- Grand Total Cards -->
-      <div v-if="report?.grandTotal && report.klienList?.length" class="grid grid-cols-6 gap-3">
+      <div v-if="report?.grandTotal && report.klienList?.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <UCard>
           <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Total Pesanan</div>
           <div class="text-2xl font-bold text-gray-800">{{ report.grandTotal.totalPesanan }} <span class="text-xs font-normal text-gray-400">pcs</span></div>
@@ -233,7 +235,7 @@
               </div>
             </div>
           </template>
-          <table>
+          <div class="overflow-x-auto"><table>
             <thead>
               <tr>
                 <th>Tanggal</th>
@@ -284,7 +286,7 @@
                 <td></td>
               </tr>
             </tfoot>
-          </table>
+          </table></div>
         </UCard>
       </div>
     </template>
@@ -330,7 +332,7 @@
             />
           </UFormField>
 
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <UFormField label="Jumlah Pesanan">
               <UInput v-model="form.pesanan" type="number" min="0" step="1" class="w-full" placeholder="0" />
             </UFormField>

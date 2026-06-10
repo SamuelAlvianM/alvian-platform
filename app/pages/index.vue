@@ -1,19 +1,19 @@
 <template>
   <div class="space-y-5">
     <!-- Stat Cards Skeleton -->
-    <div v-if="!stats" class="grid grid-cols-4 gap-4">
+    <div v-if="!stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <UCard v-for="i in 4" :key="i">
         <div class="flex items-center justify-between mb-2">
-          <USkeleton class="h-3 w-24" />
+          <USkeleton class="h-3 w-20" />
           <USkeleton class="h-9 w-9 rounded-full" />
         </div>
         <USkeleton class="h-8 w-16 mt-2" />
-        <USkeleton class="h-3 w-32 mt-2" />
+        <USkeleton class="h-3 w-28 mt-2" />
       </UCard>
     </div>
 
     <!-- Stat Cards -->
-    <div v-else class="grid grid-cols-4 gap-4">
+    <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <UCard>
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Bahan Baku</span>
@@ -46,7 +46,7 @@
           <span class="text-xs font-semibold text-sky-800 uppercase tracking-wide">Pemasukan</span>
           <span class="w-9 h-9 rounded-full flex items-center justify-center text-lg" style="background:#FFFA8D;">💰</span>
         </div>
-        <div class="text-xl font-bold text-sky-900">{{ formatRupiah(stats?.pemasukanBulanIni ?? 0) }}</div>
+        <div class="text-lg font-bold text-sky-900">{{ formatRupiah(stats?.pemasukanBulanIni ?? 0) }}</div>
         <div class="text-xs text-sky-700 mt-1">total bulan ini</div>
       </UCard>
     </div>
@@ -61,7 +61,7 @@
           </NuxtLink>
         </div>
       </template>
-      <div class="grid grid-cols-5 gap-3">
+      <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
         <NuxtLink
           v-for="k in kategoriList"
           :key="k.key"
@@ -69,26 +69,26 @@
           class="no-underline"
         >
           <div
-            class="rounded-2xl p-4 text-center cursor-pointer transition-all hover:scale-105"
+            class="rounded-2xl p-3 text-center cursor-pointer transition-all hover:scale-105"
             :style="`background:${k.bg}; border:2px solid ${k.border};`"
           >
-            <div class="text-3xl mb-2">{{ k.emoji }}</div>
-            <div class="font-bold text-2xl" :style="`color:${k.textColor};`">
+            <div class="text-2xl sm:text-3xl mb-1">{{ k.emoji }}</div>
+            <div class="font-bold text-xl sm:text-2xl" :style="`color:${k.textColor};`">
               {{ stats?.menuPerKategori?.[k.key] ?? 0 }}
             </div>
-            <div class="text-xs font-semibold mt-1" :style="`color:${k.textColor};`">{{ k.label }}</div>
+            <div class="text-xs font-semibold mt-0.5" :style="`color:${k.textColor};`">{{ k.label }}</div>
           </div>
         </NuxtLink>
       </div>
     </UCard>
 
     <!-- Quick Links + Recent Penjualan -->
-    <div class="grid grid-cols-3 gap-5">
-      <UCard class="col-span-1">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <UCard class="lg:col-span-1">
         <template #header>
           <h3 class="font-bold text-gray-800">Menu Cepat</h3>
         </template>
-        <div class="space-y-2">
+        <div class="grid grid-cols-2 lg:grid-cols-1 gap-2">
           <NuxtLink
             v-for="link in quickLinks"
             :key="link.to"
@@ -99,13 +99,13 @@
             <span class="w-9 h-9 rounded-full flex items-center justify-center text-lg flex-shrink-0" style="background:#FFFA8D;">{{ link.icon }}</span>
             <div>
               <div class="font-semibold text-sm">{{ link.title }}</div>
-              <div class="text-xs text-gray-400">{{ link.sub }}</div>
+              <div class="text-xs text-gray-400 hidden sm:block">{{ link.sub }}</div>
             </div>
           </NuxtLink>
         </div>
       </UCard>
 
-      <UCard class="col-span-2" :ui="{ body: 'p-0' }">
+      <UCard class="lg:col-span-2" :ui="{ body: 'p-0' }">
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="font-bold text-gray-800">Penjualan Terbaru</h3>
@@ -118,22 +118,24 @@
           <div class="text-3xl mb-2">🛒</div>
           Belum ada data penjualan
         </div>
-        <table v-else>
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Jumlah</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="p in stats.recentPenjualan" :key="p.id">
-              <td>{{ formatTanggal(p.tanggal) }}</td>
-              <td>{{ p.jumlah }} pcs</td>
-              <td class="font-bold text-sky-700">{{ formatRupiah(p.totalHarga) }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-else class="overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Jumlah</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in stats.recentPenjualan" :key="p.id">
+                <td>{{ formatTanggal(p.tanggal) }}</td>
+                <td>{{ p.jumlah }} pcs</td>
+                <td class="font-bold text-sky-700">{{ formatRupiah(p.totalHarga) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </UCard>
     </div>
   </div>

@@ -31,6 +31,7 @@
         <template #header>
           <h3 class="font-bold text-gray-800">Ringkasan Semua Produk</h3>
         </template>
+        <div class="overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -71,6 +72,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </UCard>
 
       <template v-for="r in data" :key="'detail-' + r.id">
@@ -81,7 +83,7 @@
               <UButton size="xs" color="neutral" variant="ghost" icon="i-heroicons-x-mark" @click="selected = null">Tutup</UButton>
             </div>
           </template>
-          <table class="mb-4">
+          <div class="overflow-x-auto mb-4"><table>
             <thead>
               <tr>
                 <th>Bahan</th><th>Jumlah</th><th>Satuan</th><th>Harga / Satuan</th><th>Subtotal</th><th>% dari HPP</th>
@@ -104,8 +106,8 @@
                 </td>
               </tr>
             </tbody>
-          </table>
-          <div class="grid grid-cols-4 gap-3">
+          </table></div>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div class="rounded-lg p-3 text-center border border-red-100 bg-red-50">
               <div class="text-xs font-bold text-red-400 mb-1">HPP TOTAL</div>
               <div class="text-lg font-bold text-red-500">{{ formatRupiah(r.hpp) }}</div>

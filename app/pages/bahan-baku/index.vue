@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-5">
-    <div id="bahan-header" class="flex items-center justify-between">
+    <div id="bahan-header" class="flex items-start sm:items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-gray-800">Bahan Baku</h1>
         <p class="text-sm text-gray-500 mt-0.5">Kelola inventori dan harga bahan baku</p>
@@ -11,7 +11,7 @@
     </div>
 
     <UCard :ui="{ body: 'p-0' }">
-      <div v-if="pending" class="p-4 space-y-3">
+      <div v-if="pending" class="p-4 space-y-3 overflow-x-auto">
         <div v-for="i in 5" :key="i" class="flex items-center gap-4 px-4 py-3">
           <USkeleton class="h-4 w-48" />
           <USkeleton class="h-6 w-16 rounded-full" />
@@ -26,7 +26,8 @@
         <p class="font-semibold text-gray-500">Belum ada bahan baku</p>
         <p class="text-sm text-gray-400 mt-1">Klik <strong>"Tambah Bahan"</strong> untuk memulai</p>
       </div>
-      <table v-else>
+      <div v-else class="overflow-x-auto">
+      <table>
         <thead>
           <tr>
             <th>Nama Bahan</th>
@@ -59,6 +60,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </UCard>
 
     <!-- Modal -->

@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-5">
-    <div id="resep-header" class="flex items-center justify-between">
+    <div id="resep-header" class="flex flex-wrap items-start sm:items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-gray-800">Resep & Menu</h1>
         <p class="text-sm text-gray-500 mt-0.5">Kue, masakan, dan semua menu Alvian's Kitchen</p>
       </div>
-      <div class="flex gap-3 items-center">
+      <div class="flex gap-2 items-center flex-wrap">
         <USelectMenu id="filter-kategori-resep" v-model="filterKategori" :items="['', ...kategoriList]" placeholder="Semua Kategori" class="w-40" />
         <UButton id="btn-tambah-resep" icon="i-heroicons-plus" @click="openTambah">Tambah Menu</UButton>
       </div>
