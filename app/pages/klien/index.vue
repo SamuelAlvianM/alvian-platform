@@ -8,7 +8,17 @@
       <UButton id="btn-tambah-klien" icon="i-heroicons-plus" @click="openTambah">Tambah Klien</UButton>
     </div>
 
-    <div v-if="pending" class="p-12 text-center text-gray-400">Memuat data...</div>
+    <div v-if="pending" class="grid grid-cols-3 gap-4">
+      <div v-for="i in 3" :key="i" class="rounded-xl border border-gray-100 p-4 space-y-3" style="background:#fff;">
+        <div class="flex items-start justify-between">
+          <USkeleton class="h-11 w-11 rounded-full" />
+          <div class="flex gap-1"><USkeleton class="h-7 w-7 rounded-lg" /><USkeleton class="h-7 w-7 rounded-lg" /></div>
+        </div>
+        <USkeleton class="h-4 w-3/4" />
+        <USkeleton class="h-3 w-1/2" />
+        <USkeleton class="h-3 w-2/3" />
+      </div>
+    </div>
     <div v-else-if="!data?.length" class="p-12 text-center">
       <div class="text-5xl mb-3">🏪</div>
       <p class="font-semibold text-gray-500">Belum ada klien terdaftar</p>
@@ -58,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-const { data, pending, refresh } = await useFetch('/api/klien')
+const { data, pending, refresh } = useFetch('/api/klien', { lazy: true })
 const { autoStartIfNew } = useAppTour()
 onMounted(autoStartIfNew)
 

@@ -18,7 +18,7 @@ function makeDriver(steps: any[], onDone?: () => void) {
     allowClose: true,
     popoverClass: 'alvian-tour-popover',
     steps,
-    onDestroyed: () => onDone?.(),
+    onDestroyed: () => { onDone?.() },
   })
 }
 
@@ -356,6 +356,7 @@ export function useAppTour() {
     if (!import.meta.client) return
     const p = currentPage()
     if (!localStorage.getItem(STORAGE_KEY(p))) {
+      localStorage.setItem(STORAGE_KEY(p), '1') // set dulu agar tidak muncul lagi walau navigasi saat tour jalan
       setTimeout(() => startTour(p), 600)
     }
   }

@@ -1,7 +1,19 @@
 <template>
   <div class="space-y-5">
+    <!-- Stat Cards Skeleton -->
+    <div v-if="!stats" class="grid grid-cols-4 gap-4">
+      <UCard v-for="i in 4" :key="i">
+        <div class="flex items-center justify-between mb-2">
+          <USkeleton class="h-3 w-24" />
+          <USkeleton class="h-9 w-9 rounded-full" />
+        </div>
+        <USkeleton class="h-8 w-16 mt-2" />
+        <USkeleton class="h-3 w-32 mt-2" />
+      </UCard>
+    </div>
+
     <!-- Stat Cards -->
-    <div class="grid grid-cols-4 gap-4">
+    <div v-else class="grid grid-cols-4 gap-4">
       <UCard>
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Bahan Baku</span>
@@ -129,7 +141,7 @@
 
 <script setup lang="ts">
 const { formatRupiah, formatTanggal } = useFormat()
-const { data: stats } = await useFetch('/api/dashboard/stats')
+const { data: stats } = useFetch('/api/dashboard/stats', { lazy: true })
 
 const kategoriList = [
   { key: 'kue',      emoji: '🍰', label: 'Kue',      bg: '#FFF9E6', border: '#FFFA8D', textColor: '#78350f' },

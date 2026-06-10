@@ -5,7 +5,21 @@
       <p class="text-sm text-gray-500 mt-0.5">Harga Pokok Produksi per produk beserta rincian bahan</p>
     </div>
 
-    <div v-if="pending" class="p-12 text-center text-gray-400">Memuat data...</div>
+    <div v-if="pending">
+      <UCard :ui="{ body: 'p-0' }">
+        <div class="p-4 space-y-3">
+          <div v-for="i in 5" :key="i" class="flex items-center gap-4 px-4 py-3">
+            <div class="flex-1 space-y-1"><USkeleton class="h-4 w-40" /><USkeleton class="h-4 w-16 rounded-full" /></div>
+            <USkeleton class="h-4 w-24" />
+            <USkeleton class="h-4 w-24" />
+            <USkeleton class="h-4 w-24" />
+            <USkeleton class="h-4 w-32" />
+            <USkeleton class="h-6 w-16 rounded-full" />
+            <USkeleton class="h-7 w-16 rounded-lg" />
+          </div>
+        </div>
+      </UCard>
+    </div>
     <div v-else-if="!data?.length" class="p-12 text-center">
       <div class="text-4xl mb-3">📊</div>
       <p class="font-semibold text-gray-500">Belum ada resep untuk dianalisis</p>
@@ -117,7 +131,7 @@
 
 <script setup lang="ts">
 const { formatRupiah } = useFormat()
-const { data, pending } = await useFetch('/api/hpp')
+const { data, pending } = useFetch('/api/hpp', { lazy: true })
 const { autoStartIfNew } = useAppTour()
 const selected = ref<number | null>(null)
 onMounted(autoStartIfNew)

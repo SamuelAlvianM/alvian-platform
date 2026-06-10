@@ -95,7 +95,20 @@
       </div>
 
       <UCard :ui="{ body: 'p-0' }">
-        <div v-if="penjualanPending" class="p-12 text-center text-gray-400">Memuat data...</div>
+        <div v-if="penjualanPending" class="p-4 space-y-3">
+          <div v-for="i in 5" :key="i" class="flex items-center gap-4 px-4 py-3">
+            <USkeleton class="h-4 w-24" />
+            <USkeleton class="h-4 w-28" />
+            <USkeleton class="h-4 w-32" />
+            <USkeleton class="h-4 w-12" />
+            <USkeleton class="h-6 w-16 rounded-full" />
+            <USkeleton class="h-4 w-12" />
+            <USkeleton class="h-4 w-20" />
+            <USkeleton class="h-4 w-24" />
+            <USkeleton class="h-4 w-16" />
+            <USkeleton class="h-7 w-7 rounded-lg" />
+          </div>
+        </div>
         <div v-else-if="!penjualanData?.length" class="p-12 text-center">
           <div class="text-4xl mb-3">🛒</div>
           <p class="font-semibold text-gray-500">Belum ada data penjualan</p>
@@ -385,10 +398,10 @@ function toStr(d: any): string {
 const { autoStartIfNew } = useAppTour()
 onMounted(autoStartIfNew)
 
-const { data: penjualanData, pending: penjualanPending, refresh: refreshPenjualan } = await useFetch('/api/penjualan', { query: queryParams })
-const { data: report, pending: reportPending, refresh: refreshReport } = await useFetch('/api/report/penjualan', { query: queryParams })
-const { data: resepList } = await useFetch('/api/resep')
-const { data: klienList } = await useFetch('/api/klien')
+const { data: penjualanData, pending: penjualanPending, refresh: refreshPenjualan } = useFetch('/api/penjualan', { query: queryParams, lazy: true })
+const { data: report, pending: reportPending, refresh: refreshReport } = useFetch('/api/report/penjualan', { query: queryParams, lazy: true })
+const { data: resepList } = useFetch('/api/resep', { lazy: true })
+const { data: klienList } = useFetch('/api/klien', { lazy: true })
 
 const resepOptions = computed(() =>
   (resepList.value as any[] ?? []).map((r: any) => ({

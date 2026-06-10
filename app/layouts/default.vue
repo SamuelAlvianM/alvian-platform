@@ -1,5 +1,6 @@
 <template>
   <div class="flex min-h-screen" style="background:#f0f9ff;">
+    <NuxtLoadingIndicator color="#4ED7F1" :height="3" />
     <AppSidebar />
     <div class="flex-1 flex flex-col" style="margin-left:240px;">
       <!-- Topbar -->

@@ -11,7 +11,20 @@
       </div>
     </div>
 
-    <div v-if="pending" class="p-12 text-center text-gray-400">Memuat data...</div>
+    <div v-if="pending" class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr));">
+      <div v-for="i in 6" :key="i" class="rounded-xl overflow-hidden border border-gray-100" style="background:#fff;">
+        <USkeleton class="h-40 w-full rounded-none" />
+        <div class="p-4 space-y-2">
+          <USkeleton class="h-4 w-3/4" />
+          <USkeleton class="h-3 w-full" />
+          <USkeleton class="h-3 w-2/3" />
+          <div class="pt-2 space-y-1.5 border-t border-gray-100 mt-2">
+            <div class="flex justify-between"><USkeleton class="h-3 w-12" /><USkeleton class="h-3 w-20" /></div>
+            <div class="flex justify-between"><USkeleton class="h-3 w-16" /><USkeleton class="h-3 w-20" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <UCard v-else-if="!data?.length" class="p-12 text-center">
       <div class="text-4xl mb-3">🍽️</div>
       <p class="font-semibold text-gray-500">Belum ada menu</p>
@@ -130,8 +143,8 @@
 
 <script setup lang="ts">
 const { formatRupiah } = useFormat()
-const { data, pending, refresh } = await useFetch('/api/resep')
-const { data: bahanList } = await useFetch('/api/bahan-baku')
+const { data, pending, refresh } = useFetch('/api/resep', { lazy: true })
+const { data: bahanList } = useFetch('/api/bahan-baku', { lazy: true })
 const { autoStartIfNew } = useAppTour()
 onMounted(autoStartIfNew)
 
