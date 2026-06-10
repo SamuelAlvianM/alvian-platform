@@ -1,13 +1,17 @@
 import { useDB } from '../../db/index'
 import { bahanBaku, resep, penjualan } from '../../db/schema'
-import { count, sum, gte, and, lte, eq } from 'drizzle-orm'
+import { count, sum, gte, and, lte, lt, eq, desc } from 'drizzle-orm'
 
 export default defineEventHandler(async () => {
   const db = useDB()
 
   const now = new Date()
-  const bulanIni = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
-  const bulanDepan = `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}-01`
+  const y = now.getFullYear()
+  const m = now.getMonth() + 1
+  const bulanIni = `${y}-${String(m).padStart(2, '0')}-01`
+  const nextM = m === 12 ? 1 : m + 1
+  const nextY = m === 12 ? y + 1 : y
+  const bulanDepan = `${nextY}-${String(nextM).padStart(2, '0')}-01`
 
   const [totalBahan] = await db.select({ count: count() }).from(bahanBaku)
   const [totalResep] = await db.select({ count: count() }).from(resep)
@@ -15,7 +19,7 @@ export default defineEventHandler(async () => {
   const [penjualanBulanIni] = await db
     .select({ count: count(), total: sum(penjualan.totalHarga) })
     .from(penjualan)
-    .where(and(gte(penjualan.tanggal, bulanIni), lte(penjualan.tanggal, bulanDepan)))
+    .where(and(gte(penjualan.tanggal, bulanIni), lt(penjualan.tanggal, bulanDepan)))
 
   const recentPenjualan = await db
     .select({
@@ -25,7 +29,7 @@ export default defineEventHandler(async () => {
       jumlah: penjualan.jumlah,
     })
     .from(penjualan)
-    .orderBy(penjualan.createdAt)
+    .orderBy(desc(penjualan.createdAt))
     .limit(5)
 
   // Count per kategori

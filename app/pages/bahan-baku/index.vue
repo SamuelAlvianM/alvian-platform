@@ -1,21 +1,21 @@
 <template>
   <div class="space-y-5">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div id="bahan-header" class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-800">Bahan Baku</h1>
         <p class="text-sm text-gray-500 mt-0.5">Kelola inventori dan harga bahan baku</p>
       </div>
-      <UButton icon="i-heroicons-plus" @click="openTambah">Tambah Bahan</UButton>
+      <div class="flex items-center gap-2">
+        <UButton id="btn-tambah-bahan" icon="i-heroicons-plus" @click="openTambah">Tambah Bahan</UButton>
+      </div>
     </div>
 
-    <!-- Table -->
     <UCard :ui="{ body: 'p-0' }">
       <div v-if="pending" class="p-12 text-center text-gray-400">Memuat data...</div>
       <div v-else-if="!data?.length" class="p-12 text-center">
         <div class="text-4xl mb-3">🧂</div>
         <p class="font-semibold text-gray-500">Belum ada bahan baku</p>
-        <p class="text-sm text-gray-400 mt-1">Tambahkan bahan baku pertama Anda</p>
+        <p class="text-sm text-gray-400 mt-1">Klik <strong>"Tambah Bahan"</strong> untuk memulai</p>
       </div>
       <table v-else>
         <thead>
@@ -56,19 +56,14 @@
     <UModal v-model:open="showModal" :title="editItem ? 'Edit Bahan Baku' : 'Tambah Bahan Baku'">
       <template #body>
         <UForm :state="form" class="space-y-4" @submit="simpan">
-          <UFormField label="Nama Bahan" required>
-            <UInput v-model="form.nama" placeholder="cth: Tepung Terigu" class="w-full" />
+          <UFormField id="form-nama-bahan" label="Nama Bahan" required>
+            <UInput v-model="form.nama" placeholder="cth: Tepung Terigu" class="w-full" autofocus />
           </UFormField>
           <div class="grid grid-cols-2 gap-3">
-            <UFormField label="Satuan" required>
-              <USelectMenu
-                v-model="form.satuan"
-                :items="satuanOptions"
-                placeholder="Pilih satuan"
-                class="w-full"
-              />
+            <UFormField id="form-satuan-bahan" label="Satuan" required>
+              <USelectMenu v-model="form.satuan" :items="satuanOptions" placeholder="Pilih satuan" class="w-full" />
             </UFormField>
-            <UFormField label="Stok Saat Ini">
+            <UFormField id="form-stok-bahan" label="Stok Saat Ini">
               <UInput v-model="form.stok" type="number" min="0" step="0.001" placeholder="0" class="w-full" />
             </UFormField>
           </div>
@@ -79,7 +74,7 @@
           </UFormField>
           <div class="flex gap-3 justify-end pt-2 border-t border-gray-100">
             <UButton color="neutral" variant="outline" @click="showModal = false">Batal</UButton>
-            <UButton type="submit" :loading="loading">
+            <UButton id="btn-simpan-bahan" type="submit" :loading="loading">
               {{ editItem ? 'Simpan Perubahan' : 'Tambah Bahan' }}
             </UButton>
           </div>
@@ -92,9 +87,10 @@
 <script setup lang="ts">
 const { formatRupiah, formatAngka } = useFormat()
 const { data, pending, refresh } = await useFetch('/api/bahan-baku')
+const { autoStartIfNew } = useAppTour()
+onMounted(autoStartIfNew)
 
 const satuanOptions = ['gram', 'kg', 'ml', 'liter', 'buah', 'butir', 'sdm', 'sdt', 'sachet', 'lembar']
-
 const showModal = ref(false)
 const loading = ref(false)
 const editItem = ref<any>(null)

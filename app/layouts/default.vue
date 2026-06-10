@@ -30,7 +30,9 @@ const titles: Record<string, string> = {
   '/': 'Dashboard',
   '/bahan-baku': 'Bahan Baku',
   '/resep': 'Resep & Menu',
-  '/penjualan': 'Data Penjualan',
+  '/klien': 'Klien & Toko',
+  '/penjualan': 'Penjualan & Laporan',
+  '/admin/users': 'Kelola User',
   '/hpp': 'Analisis HPP',
 }
 const pageTitle = computed(() => titles[route.path] ?? "Alvian's Kitchen")
@@ -44,7 +46,19 @@ function updateWaktu() {
   tanggalHari.value = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+const { startTour } = useAppTour()
+
 let timer: ReturnType<typeof setInterval>
-onMounted(() => { updateWaktu(); timer = setInterval(updateWaktu, 1000) })
+onMounted(() => {
+  updateWaktu()
+  timer = setInterval(updateWaktu, 1000)
+  // Auto-start global tour hanya di dashboard, pertama kali saja
+  if (route.path === '/' && !localStorage.getItem('alvian_tour_global_done')) {
+    setTimeout(() => {
+      startTour('global')
+      localStorage.setItem('alvian_tour_global_done', '1')
+    }, 800)
+  }
+})
 onUnmounted(() => clearInterval(timer))
 </script>

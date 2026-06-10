@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-5">
-    <div>
+    <div id="hpp-header">
       <h1 class="text-xl font-bold text-gray-800">Analisis HPP</h1>
       <p class="text-sm text-gray-500 mt-0.5">Harga Pokok Produksi per produk beserta rincian bahan</p>
     </div>
@@ -13,8 +13,7 @@
     </div>
 
     <template v-else>
-      <!-- Summary Table -->
-      <UCard :ui="{ body: 'p-0' }">
+      <UCard id="hpp-table" :ui="{ body: 'p-0' }">
         <template #header>
           <h3 class="font-bold text-gray-800">Ringkasan Semua Produk</h3>
         </template>
@@ -25,7 +24,7 @@
               <th>HPP</th>
               <th>Harga Jual</th>
               <th>Keuntungan / pcs</th>
-              <th>Margin</th>
+              <th id="hpp-margin-info">Margin</th>
               <th>Status</th>
               <th></th>
             </tr>
@@ -42,24 +41,16 @@
               <td>
                 <div class="flex items-center gap-2">
                   <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden" style="min-width:60px">
-                    <div
-                      :style="{ width: Math.min(r.margin, 100) + '%' }"
-                      class="h-full rounded-full transition-all"
-                      :class="r.margin >= 30 ? 'bg-green-400' : r.margin >= 15 ? 'bg-yellow-400' : 'bg-red-400'"
-                    />
+                    <div :style="{ width: Math.min(r.margin, 100) + '%' }" class="h-full rounded-full transition-all" :class="r.margin >= 30 ? 'bg-green-400' : r.margin >= 15 ? 'bg-yellow-400' : 'bg-red-400'" />
                   </div>
                   <span class="font-semibold text-sm">{{ r.margin.toFixed(1) }}%</span>
                 </div>
               </td>
               <td>
-                <UBadge
-                  :label="r.margin >= 30 ? 'Bagus' : r.margin >= 15 ? 'Cukup' : 'Rendah'"
-                  :color="r.margin >= 30 ? 'green' : r.margin >= 15 ? 'yellow' : 'red'"
-                  variant="subtle"
-                />
+                <UBadge :label="r.margin >= 30 ? 'Bagus' : r.margin >= 15 ? 'Cukup' : 'Rendah'" :color="r.margin >= 30 ? 'green' : r.margin >= 15 ? 'yellow' : 'red'" variant="subtle" />
               </td>
               <td>
-                <UButton size="xs" color="sky" variant="ghost" @click="selected = selected === r.id ? null : r.id">
+                <UButton id="hpp-detail-btn" size="xs" color="sky" variant="ghost" @click="selected = selected === r.id ? null : r.id">
                   {{ selected === r.id ? 'Tutup' : 'Rincian' }}
                 </UButton>
               </td>
@@ -68,7 +59,6 @@
         </table>
       </UCard>
 
-      <!-- Rincian per produk -->
       <template v-for="r in data" :key="'detail-' + r.id">
         <UCard v-if="selected === r.id" class="border-2 border-sky-300">
           <template #header>
@@ -77,16 +67,10 @@
               <UButton size="xs" color="neutral" variant="ghost" icon="i-heroicons-x-mark" @click="selected = null">Tutup</UButton>
             </div>
           </template>
-
           <table class="mb-4">
             <thead>
               <tr>
-                <th>Bahan</th>
-                <th>Jumlah</th>
-                <th>Satuan</th>
-                <th>Harga / Satuan</th>
-                <th>Subtotal</th>
-                <th>% dari HPP</th>
+                <th>Bahan</th><th>Jumlah</th><th>Satuan</th><th>Harga / Satuan</th><th>Subtotal</th><th>% dari HPP</th>
               </tr>
             </thead>
             <tbody>
@@ -107,8 +91,6 @@
               </tr>
             </tbody>
           </table>
-
-          <!-- Summary boxes -->
           <div class="grid grid-cols-4 gap-3">
             <div class="rounded-lg p-3 text-center border border-red-100 bg-red-50">
               <div class="text-xs font-bold text-red-400 mb-1">HPP TOTAL</div>
@@ -136,5 +118,7 @@
 <script setup lang="ts">
 const { formatRupiah } = useFormat()
 const { data, pending } = await useFetch('/api/hpp')
+const { autoStartIfNew } = useAppTour()
 const selected = ref<number | null>(null)
+onMounted(autoStartIfNew)
 </script>

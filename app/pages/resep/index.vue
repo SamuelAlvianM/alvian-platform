@@ -1,19 +1,13 @@
 <template>
   <div class="space-y-5">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div id="resep-header" class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-800">Resep & Menu</h1>
         <p class="text-sm text-gray-500 mt-0.5">Kue, masakan, dan semua menu Alvian's Kitchen</p>
       </div>
       <div class="flex gap-3 items-center">
-        <USelectMenu
-          v-model="filterKategori"
-          :items="['', ...kategoriList]"
-          placeholder="Semua Kategori"
-          class="w-40"
-        />
-        <UButton icon="i-heroicons-plus" @click="openTambah">Tambah Menu</UButton>
+        <USelectMenu id="filter-kategori-resep" v-model="filterKategori" :items="['', ...kategoriList]" placeholder="Semua Kategori" class="w-40" />
+        <UButton id="btn-tambah-resep" icon="i-heroicons-plus" @click="openTambah">Tambah Menu</UButton>
       </div>
     </div>
 
@@ -21,12 +15,12 @@
     <UCard v-else-if="!data?.length" class="p-12 text-center">
       <div class="text-4xl mb-3">🍽️</div>
       <p class="font-semibold text-gray-500">Belum ada menu</p>
+      <p class="text-sm text-gray-400 mt-1">Pastikan sudah menambahkan bahan baku dulu, lalu klik <strong>"Tambah Menu"</strong></p>
     </UCard>
     <UCard v-else-if="filteredData.length === 0" class="p-6 text-center text-gray-400">
       Tidak ada menu di kategori "{{ filterKategori }}"
     </UCard>
 
-    <!-- Grid Cards -->
     <div v-else class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr));">
       <UCard v-for="r in filteredData" :key="r.id" :ui="{ body: 'p-0' }" class="overflow-hidden flex flex-col">
         <div class="relative h-40 bg-gray-100">
@@ -52,11 +46,7 @@
             </div>
             <div class="flex justify-between items-center text-sm">
               <span class="text-gray-400">Margin</span>
-              <UBadge
-                :label="`${r.margin.toFixed(1)}%`"
-                :color="r.margin >= 30 ? 'green' : r.margin >= 15 ? 'yellow' : 'red'"
-                variant="subtle"
-              />
+              <UBadge :label="`${r.margin.toFixed(1)}%`" :color="r.margin >= 30 ? 'green' : r.margin >= 15 ? 'yellow' : 'red'" variant="subtle" />
             </div>
           </div>
           <div class="flex gap-2 pt-1">
@@ -71,8 +61,7 @@
     <UModal v-model:open="showModal" :title="editItem ? 'Edit Menu' : 'Tambah Menu Baru'" :ui="{ content: 'max-w-2xl' }">
       <template #body>
         <UForm :state="form" class="space-y-4" @submit="simpan">
-          <!-- Upload Gambar — tampilkan URL server, bukan blob -->
-          <UFormField label="Foto Menu">
+          <UFormField id="form-foto-resep" label="Foto Menu">
             <div class="flex gap-3 items-start">
               <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center border border-gray-200">
                 <img v-if="form.gambar" :src="form.gambar" class="w-full h-full object-cover" />
@@ -89,7 +78,7 @@
             </div>
           </UFormField>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div id="form-nama-resep" class="grid grid-cols-2 gap-3">
             <UFormField label="Nama Menu" required>
               <UInput v-model="form.nama" placeholder="cth: Brownies Coklat" class="w-full" />
             </UFormField>
@@ -98,7 +87,7 @@
             </UFormField>
           </div>
 
-          <UFormField label="Harga Jual (Rp)" required>
+          <UFormField id="form-harga-resep" label="Harga Jual (Rp)" required>
             <UInput v-model="form.hargaJual" type="number" min="0" step="1" placeholder="cth: 50000" class="w-full">
               <template #leading><span class="text-gray-400 text-sm">Rp</span></template>
             </UInput>
@@ -108,7 +97,7 @@
             <UTextarea v-model="form.deskripsi" placeholder="Deskripsi menu (opsional)" :rows="2" class="w-full" />
           </UFormField>
 
-          <div>
+          <div id="form-bahan-resep">
             <div class="flex items-center justify-between mb-2">
               <label class="text-sm font-semibold text-gray-700">Bahan-bahan</label>
               <UButton size="xs" color="yellow" variant="soft" icon="i-heroicons-plus" @click="tambahBaris">Tambah Bahan</UButton>
@@ -118,7 +107,7 @@
               <span class="font-bold text-sky-800">{{ formatRupiah(hppPreview) }}</span>
             </div>
             <div v-if="!form.bahan.length" class="text-center p-4 bg-gray-50 rounded-lg text-gray-400 text-sm">
-              Belum ada bahan ditambahkan
+              Belum ada bahan — klik "Tambah Bahan" di atas
             </div>
             <div v-for="(b, i) in form.bahan" :key="i" class="flex gap-2 mb-2 items-center">
               <USelectMenu v-model="b.bahanBakuId" :items="bahanOptions" value-key="id" label-key="label" placeholder="Pilih bahan" class="flex-1" />
@@ -143,6 +132,8 @@
 const { formatRupiah } = useFormat()
 const { data, pending, refresh } = await useFetch('/api/resep')
 const { data: bahanList } = await useFetch('/api/bahan-baku')
+const { autoStartIfNew } = useAppTour()
+onMounted(autoStartIfNew)
 
 const kategoriList = ['kue', 'masakan', 'minuman', 'snack', 'lainnya']
 const kategoriItems = [
@@ -152,7 +143,6 @@ const kategoriItems = [
   { label: '🍿 Snack', value: 'snack' },
   { label: '🍽️ Lainnya', value: 'lainnya' },
 ]
-
 function kategoriEmoji(k?: string) {
   return { kue: '🍰', masakan: '🍛', minuman: '🥤', snack: '🍿' }[k ?? ''] ?? '🍽️'
 }
@@ -199,7 +189,6 @@ async function onFileChange(e: Event) {
     const fd = new FormData()
     fd.append('file', file)
     fd.append('kategori', form.kategori || 'menu')
-    // Langsung pakai URL dari server — tidak pakai blob
     const res = await $fetch<{ url: string }>('/api/upload', { method: 'POST', body: fd })
     form.gambar = res.url
   } finally {

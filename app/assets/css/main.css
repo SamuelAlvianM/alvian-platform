@@ -30,6 +30,50 @@ html, body {
   font-family: var(--font-playwrite);
 }
 
+/* ── Driver.js Tour ── */
+.alvian-tour-popover {
+  background: #fff !important;
+  border: 2px solid #4ED7F1 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 8px 32px rgba(78,215,241,0.2) !important;
+  font-family: var(--font-outfit) !important;
+}
+.alvian-tour-popover .driver-popover-title {
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  color: #0f2635 !important;
+  margin-bottom: 0.5rem !important;
+}
+.alvian-tour-popover .driver-popover-description {
+  font-size: 0.875rem !important;
+  color: #374151 !important;
+  line-height: 1.6 !important;
+  white-space: pre-line !important;
+}
+.alvian-tour-popover .driver-popover-footer {
+  margin-top: 1rem !important;
+  gap: 0.5rem !important;
+}
+.alvian-tour-popover .driver-popover-next-btn {
+  background: #4ED7F1 !important;
+  color: #0f2635 !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 1rem !important;
+}
+.alvian-tour-popover .driver-popover-next-btn:hover { background: #38c4de !important; }
+.alvian-tour-popover .driver-popover-prev-btn {
+  background: transparent !important;
+  border: 1.5px solid #A8F1FF !important;
+  color: #0f4a5c !important;
+  border-radius: 0.5rem !important;
+  font-weight: 500 !important;
+  padding: 0.4rem 1rem !important;
+}
+.alvian-tour-popover .driver-popover-close-btn { color: #9ca3af !important; }
+.alvian-tour-popover .driver-popover-progress-text { color: #6b7280 !important; font-size: 0.75rem !important; }
+
 /* ── Tabel ── */
 table { width: 100%; border-collapse: collapse; }
 thead th {
