@@ -6,9 +6,12 @@
         <h1 class="text-xl font-bold text-gray-800">Penjualan</h1>
         <p class="text-sm text-gray-500 mt-0.5">Catat transaksi dan lihat laporan per klien</p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
         <UButton v-if="activeTab === 'laporan'" icon="i-heroicons-arrow-down-tray" color="emerald" variant="soft" @click="downloadExcel" :disabled="!report?.klienList?.length">
           Download Excel
+        </UButton>
+        <UButton v-if="activeTab === 'transaksi'" icon="i-heroicons-arrow-up-tray" color="violet" variant="soft" @click="openImport">
+          Import Excel
         </UButton>
         <UButton id="btn-catat-penjualan" v-if="activeTab === 'transaksi'" icon="i-heroicons-plus" @click="openTambah">Catat Penjualan</UButton>
       </div>
@@ -291,6 +294,157 @@
       </div>
     </template>
 
+    <!-- ── Modal Import Excel / Google Sheets ── -->
+    <UModal v-model:open="showImport" title="Import Data Penjualan" :ui="{ content: 'max-w-3xl' }">
+      <template #body>
+        <div class="space-y-4">
+
+          <!-- Tab sumber data -->
+          <div class="flex gap-2 p-1 rounded-xl w-fit" style="background:#e0f4fa; border:1.5px solid #A8F1FF;">
+            <button
+              v-for="src in importSources"
+              :key="src.value"
+              @click="importSource = src.value; resetImportState()"
+              class="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
+              :style="importSource === src.value
+                ? 'background:#FFFA8D; color:#78350f;'
+                : 'background:transparent; color:#0f4a5c;'"
+            >{{ src.label }}</button>
+          </div>
+
+          <!-- ── Panduan singkat ── -->
+          <div class="rounded-xl p-3 text-sm" style="background:#f0f9ff; border:1.5px solid #A8F1FF;">
+            <p class="font-bold text-sky-800 mb-1">📋 Tips import</p>
+            <ul class="text-gray-600 space-y-0.5 list-disc list-inside text-xs">
+              <li>Kolom wajib: <strong>Tanggal, Nama Produk, Jumlah Terjual, Harga Jual</strong></li>
+              <li>Format tanggal: <strong>DD/MM/YYYY</strong> atau <strong>YYYY-MM-DD</strong></li>
+              <li>Produk tidak ditemukan → baris dilewati, sisanya tetap diimport</li>
+              <li>Klien tidak ditemukan → diimport tanpa klien, bisa diubah manual</li>
+              <li>Nama kolom tidak harus persis — sistem mendeteksi otomatis</li>
+            </ul>
+          </div>
+
+          <!-- ── SOURCE: FILE ── -->
+          <template v-if="importSource === 'file'">
+            <div class="flex items-center gap-3 flex-wrap">
+              <UButton icon="i-heroicons-document-arrow-down" color="sky" variant="soft" size="sm" @click="downloadTemplate">
+                Download Template
+              </UButton>
+              <span class="text-xs text-gray-400">Template berisi contoh & daftar produk/klien</span>
+            </div>
+            <div
+              class="border-2 border-dashed rounded-xl p-6 text-center transition-colors"
+              :style="dragOver ? 'border-color:#4ED7F1;background:#f0fdff;' : 'border-color:#d1d5db;background:#fafafa;'"
+              @dragover.prevent="dragOver = true"
+              @dragleave="dragOver = false"
+              @drop.prevent="onDrop"
+            >
+              <input ref="importFileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden" @change="onImportFile" />
+              <div class="text-4xl mb-2">📊</div>
+              <p class="font-semibold text-gray-700">Drag & drop file Excel / CSV di sini</p>
+              <p class="text-sm text-gray-400 mb-3">atau</p>
+              <UButton color="neutral" variant="outline" @click="importFileInput?.click()">Pilih File</UButton>
+              <p v-if="importFileName" class="mt-2 text-sm font-medium text-sky-600">📎 {{ importFileName }}</p>
+            </div>
+          </template>
+
+          <!-- ── SOURCE: GOOGLE SHEETS ── -->
+          <template v-else>
+            <div class="rounded-xl p-4 space-y-3" style="background:#f9f9f9;border:1.5px solid #e5e7eb;">
+              <p class="text-sm font-semibold text-gray-700">🔗 Paste link Google Sheets</p>
+              <p class="text-xs text-gray-500">Pastikan spreadsheet sudah diset <strong>"Anyone with the link can view"</strong><br>(Share → Change → Anyone with the link)</p>
+              <div class="flex gap-2">
+                <UInput
+                  v-model="sheetsUrl"
+                  placeholder="https://docs.google.com/spreadsheets/d/..."
+                  class="flex-1"
+                  @keyup.enter="fetchFromSheets"
+                />
+                <UButton icon="i-heroicons-arrow-down-tray" color="sky" :loading="sheetsFetching" @click="fetchFromSheets">
+                  Ambil Data
+                </UButton>
+              </div>
+              <p v-if="sheetsError" class="text-xs text-red-600 mt-1">{{ sheetsError }}</p>
+            </div>
+          </template>
+
+          <!-- ── Preview tabel ── -->
+          <div v-if="importPreview.length > 0">
+            <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <div class="font-semibold text-gray-700">Preview — {{ importPreview.length }} baris</div>
+              <div class="flex gap-2">
+                <UBadge :label="`${importPreview.length} baris terbaca`" color="sky" variant="subtle" />
+              </div>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
+              <table style="min-width:640px;">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Klien</th>
+                    <th>Produk</th>
+                    <th class="text-right">Pesanan</th>
+                    <th class="text-right">Terjual</th>
+                    <th class="text-right">Harga/pcs</th>
+                    <th class="text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(r, i) in importPreview.slice(0, 30)" :key="i">
+                    <td>{{ r.tanggal }}</td>
+                    <td class="text-gray-500">{{ r.namaKlien || '—' }}</td>
+                    <td class="font-medium">{{ r.namaResep }}</td>
+                    <td class="text-right">{{ r.pesanan }}</td>
+                    <td class="text-right">{{ r.jumlah }}</td>
+                    <td class="text-right">{{ formatRupiah(r.hargaJual) }}</td>
+                    <td class="text-right font-semibold text-green-600">{{ formatRupiah(r.jumlah * r.hargaJual) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div v-if="importPreview.length > 30" class="text-center py-2 text-xs text-gray-400">
+                ... dan {{ importPreview.length - 30 }} baris lainnya
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Skipped / warning (dari preview parsing) ── -->
+          <div v-if="importSkipped.length && !importResult" class="rounded-xl p-3 space-y-1" style="background:#FFFBEB;border:1.5px solid #FCD34D;">
+            <div class="font-semibold text-amber-700 text-sm">⚠️ {{ importSkipped.length }} baris akan dilewati:</div>
+            <ul class="text-xs text-amber-700 space-y-0.5 list-disc list-inside max-h-28 overflow-y-auto">
+              <li v-for="s in importSkipped" :key="s">{{ s }}</li>
+            </ul>
+          </div>
+
+          <!-- ── Hasil import ── -->
+          <template v-if="importResult">
+            <div class="rounded-xl p-4" style="background:#D1FAE5;border:1.5px solid #6EE7B7;">
+              <div class="font-bold text-emerald-800 text-base">✅ Berhasil import {{ importResult.inserted }} transaksi!</div>
+              <div class="text-sm text-emerald-700 mt-0.5">dari {{ importResult.total }} baris total</div>
+            </div>
+            <div v-if="importResult.skipped?.length" class="rounded-xl p-3" style="background:#FFFBEB;border:1.5px solid #FCD34D;">
+              <div class="font-semibold text-amber-700 text-sm mb-1">{{ importResult.skipped.length }} baris dilewati:</div>
+              <ul class="text-xs text-amber-700 space-y-0.5 list-disc list-inside max-h-32 overflow-y-auto">
+                <li v-for="s in importResult.skipped" :key="s.row">Baris {{ s.row }}: {{ s.alasan }}</li>
+              </ul>
+            </div>
+          </template>
+
+          <div class="flex gap-3 justify-end pt-2 border-t border-gray-100">
+            <UButton color="neutral" variant="outline" @click="showImport = false">Tutup</UButton>
+            <UButton
+              v-if="importPreview.length > 0 && !importResult"
+              icon="i-heroicons-arrow-up-tray"
+              color="violet"
+              :loading="importLoading"
+              @click="doImport"
+            >
+              Import {{ importPreview.length }} Baris
+            </UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
     <!-- Modal Catat Penjualan -->
     <UModal v-model:open="showModal" title="Catat Penjualan Baru">
       <template #body>
@@ -502,6 +656,200 @@ async function hapus(id: number) {
   await $fetch(`/api/penjualan/${id}`, { method: 'DELETE' })
   refreshPenjualan()
   refreshReport()
+}
+
+// ── Import Excel / Google Sheets ──
+const showImport = ref(false)
+const importSource = ref<'file' | 'sheets'>('file')
+const importSources = [
+  { value: 'file',   label: '📊 File Excel / CSV' },
+  { value: 'sheets', label: '🟢 Google Sheets' },
+]
+const importFileInput = ref<HTMLInputElement | null>(null)
+const importFileName = ref('')
+const importPreview = ref<any[]>([])
+const importSkipped = ref<string[]>([])
+const importResult = ref<any>(null)
+const importLoading = ref(false)
+const dragOver = ref(false)
+
+// Google Sheets
+const sheetsUrl = ref('')
+const sheetsFetching = ref(false)
+const sheetsError = ref('')
+
+function resetImportState() {
+  importFileName.value = ''
+  importPreview.value = []
+  importSkipped.value = []
+  importResult.value = null
+  sheetsError.value = ''
+  sheetsUrl.value = ''
+}
+
+function openImport() {
+  importSource.value = 'file'
+  resetImportState()
+  showImport.value = true
+}
+
+function parseExcelDate(raw: any): string {
+  if (!raw) return ''
+  // Angka serial Excel
+  if (typeof raw === 'number') {
+    const d = XLSX.SSF.parse_date_code(raw)
+    if (d) return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`
+  }
+  const s = String(raw).trim()
+  // DD/MM/YYYY
+  const m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (m1) return `${m1[3]}-${m1[2].padStart(2,'0')}-${m1[1].padStart(2,'0')}`
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
+  return s
+}
+
+function parseRows(rows: any[][]) {
+  if (rows.length < 2) { importSkipped.value = ['File/sheet kosong atau tidak ada data']; return }
+
+  const headers = rows[0].map((h: any) => String(h).toLowerCase().trim())
+  const col = (names: string[]) => names.map(n => headers.indexOf(n)).find(i => i >= 0) ?? -1
+
+  const iDate    = col(['tanggal', 'date', 'tgl'])
+  const iKlien   = col(['nama klien', 'klien', 'toko', 'client', 'nama toko'])
+  const iResep   = col(['nama produk', 'produk', 'resep', 'nama menu', 'menu', 'item', 'barang'])
+  const iPesanan = col(['jumlah pesanan', 'pesanan', 'order', 'total order', 'dipesan'])
+  const iJumlah  = col(['jumlah terjual', 'terjual', 'jumlah', 'qty', 'quantity', 'sold', 'laku'])
+  const iHarga   = col(['harga jual', 'harga/pcs', 'harga per pcs', 'harga', 'price', 'harga satuan'])
+  const iCatatan = col(['catatan', 'keterangan', 'notes', 'note', 'ket'])
+
+  if (iDate < 0 || iResep < 0 || iJumlah < 0 || iHarga < 0) {
+    importSkipped.value = ['Kolom wajib tidak ditemukan. Diperlukan: Tanggal, Nama Produk, Jumlah Terjual, Harga Jual']
+    return
+  }
+
+  const parsed: any[] = []
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i]
+    if (!r || r.every((c: any) => !c && c !== 0)) continue
+    parsed.push({
+      tanggal:   parseExcelDate(r[iDate]),
+      namaKlien: iKlien >= 0 ? String(r[iKlien] ?? '').trim() : '',
+      namaResep: String(r[iResep] ?? '').trim(),
+      pesanan:   Number(iPesanan >= 0 ? r[iPesanan] : r[iJumlah]) || 0,
+      jumlah:    Number(r[iJumlah]) || 0,
+      hargaJual: Number(String(r[iHarga] ?? '').replace(/[^0-9.]/g, '')) || 0,
+      catatan:   iCatatan >= 0 ? String(r[iCatatan] ?? '').trim() : '',
+    })
+  }
+  importPreview.value = parsed
+}
+
+function parseExcelBuffer(buffer: ArrayBuffer, filename: string) {
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: false })
+  const ws = wb.Sheets[wb.SheetNames[0]]
+  const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+  parseRows(rows)
+}
+
+function parseCsvString(csv: string) {
+  const wb = XLSX.read(csv, { type: 'string' })
+  const ws = wb.Sheets[wb.SheetNames[0]]
+  const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+  parseRows(rows)
+}
+
+function parseExcelFile(file: File) {
+  importFileName.value = file.name
+  importPreview.value = []
+  importSkipped.value = []
+  importResult.value = null
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      parseExcelBuffer(e.target!.result as ArrayBuffer, file.name)
+    } catch {
+      importSkipped.value = ['Gagal membaca file. Pastikan format .xlsx, .xls, atau .csv']
+    }
+  }
+  reader.readAsArrayBuffer(file)
+}
+
+async function fetchFromSheets() {
+  if (!sheetsUrl.value.trim()) { sheetsError.value = 'Masukkan URL Google Sheets'; return }
+  sheetsError.value = ''
+  sheetsFetching.value = true
+  importPreview.value = []
+  importSkipped.value = []
+  importResult.value = null
+  try {
+    const { csv } = await $fetch<{ csv: string }>('/api/penjualan/fetch-sheet', {
+      query: { url: sheetsUrl.value.trim() }
+    })
+    parseCsvString(csv)
+    if (importPreview.value.length === 0 && importSkipped.value.length === 0)
+      sheetsError.value = 'Sheet kosong atau format kolom tidak dikenali'
+  } catch (e: any) {
+    sheetsError.value = e?.data?.message ?? 'Gagal mengakses spreadsheet'
+  } finally {
+    sheetsFetching.value = false
+  }
+}
+
+function onImportFile(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) parseExcelFile(file)
+}
+
+function onDrop(e: DragEvent) {
+  dragOver.value = false
+  const file = e.dataTransfer?.files?.[0]
+  if (file) parseExcelFile(file)
+}
+
+async function doImport() {
+  importLoading.value = true
+  importSkipped.value = []
+  try {
+    const res = await $fetch<any>('/api/penjualan/import', {
+      method: 'POST',
+      body: importPreview.value,
+    })
+    importResult.value = res
+    refreshPenjualan()
+    refreshReport()
+  } catch (e: any) {
+    const msg = e?.data?.message ?? 'Terjadi kesalahan saat import'
+    importSkipped.value = msg.split('\n')
+  } finally {
+    importLoading.value = false
+  }
+}
+
+function downloadTemplate() {
+  const wb = XLSX.utils.book_new()
+
+  // Sheet 1: Template
+  const templateRows = [
+    ['Tanggal', 'Nama Klien', 'Nama Produk', 'Jumlah Pesanan', 'Jumlah Terjual', 'Harga Jual', 'Catatan'],
+    ['25/12/2024', 'Toko Bu Sari', 'Kue Lapis', 50, 48, 15000, 'Stok habis 2 hari'],
+    ['26/12/2024', '', 'Risoles Mayo', 30, 30, 8000, ''],
+    ['27/12/2024', 'Warung Pak Budi', 'Bolu Pandan', 20, 18, 25000, 'Titip 2 buat besok'],
+  ]
+  const wsTemplate = XLSX.utils.aoa_to_sheet(templateRows)
+  // Lebar kolom
+  wsTemplate['!cols'] = [{ wch: 14 }, { wch: 20 }, { wch: 25 }, { wch: 16 }, { wch: 16 }, { wch: 12 }, { wch: 30 }]
+  XLSX.utils.book_append_sheet(wb, wsTemplate, 'Template Import')
+
+  // Sheet 2: Daftar produk dari resepList
+  const produkRows = [['Nama Produk (salin persis ke template)'], ...(resepList.value as any[] ?? []).map((r: any) => [r.nama])]
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(produkRows), 'Daftar Produk')
+
+  // Sheet 3: Daftar klien
+  const klienRows = [['Nama Klien (salin persis ke template)'], ...(klienList.value as any[] ?? []).map((k: any) => [k.nama])]
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(klienRows), 'Daftar Klien')
+
+  XLSX.writeFile(wb, 'template-import-penjualan.xlsx')
 }
 
 // Excel download

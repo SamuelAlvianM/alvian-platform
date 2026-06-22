@@ -86,7 +86,7 @@
                   {{ uploadLoading ? 'Mengupload...' : 'Pilih Foto' }}
                 </UButton>
                 <p v-if="form.gambar" class="text-xs text-sky-500 truncate">{{ form.gambar }}</p>
-                <p class="text-xs text-gray-400">JPG, PNG, WebP. Disimpan di /media/</p>
+                <p class="text-xs text-gray-400">JPG, PNG, WebP. Dikompres otomatis & disimpan di database.</p>
               </div>
             </div>
           </UFormField>
@@ -199,15 +199,36 @@ async function onFileChange(e: Event) {
   if (!file) return
   uploadLoading.value = true
   try {
-    const fd = new FormData()
-    fd.append('file', file)
-    fd.append('kategori', form.kategori || 'menu')
-    const res = await $fetch<{ url: string }>('/api/upload', { method: 'POST', body: fd })
-    form.gambar = res.url
+    // Kompres & konversi ke base64 langsung di browser — tidak perlu server upload
+    // Ini memastikan gambar tetap ada di Vercel (disimpan di database Neon)
+    form.gambar = await compressToBase64(file, 480, 360, 0.82)
   } finally {
     uploadLoading.value = false
     if (fileInput.value) fileInput.value.value = ''
   }
+}
+
+function compressToBase64(file: File, maxW: number, maxH: number, quality: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      let { width, height } = img
+      if (width > maxW || height > maxH) {
+        const ratio = Math.min(maxW / width, maxH / height)
+        width = Math.round(width * ratio)
+        height = Math.round(height * ratio)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/webp', quality))
+    }
+    img.onerror = reject
+    img.src = url
+  })
 }
 
 function tambahBaris() { form.bahan.push({ bahanBakuId: '', jumlah: 0 }) }
