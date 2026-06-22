@@ -25,7 +25,7 @@ export const resep = pgTable('resep', {
   nama: varchar('nama', { length: 255 }).notNull(),
   kategori: varchar('kategori', { length: 100 }).default('kue'),
   deskripsi: text('deskripsi'),
-  gambar: varchar('gambar', { length: 500 }),
+  gambar: text('gambar'),
   hargaJual: real('harga_jual').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

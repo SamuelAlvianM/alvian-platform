@@ -74,30 +74,40 @@
     <UModal v-model:open="showModal" :title="editItem ? 'Edit Menu' : 'Tambah Menu Baru'" :ui="{ content: 'max-w-2xl' }">
       <template #body>
         <UForm :state="form" class="space-y-4" @submit="simpan">
-          <UFormField id="form-foto-resep" label="Foto Menu">
-            <div class="flex gap-3 items-start">
-              <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center border border-gray-200">
-                <img v-if="form.gambar" :src="form.gambar" class="w-full h-full object-cover" />
-                <span v-else class="text-2xl">📷</span>
+          <!-- Foto — klik gambar langsung untuk upload -->
+          <div class="flex gap-4 items-start">
+            <input type="file" ref="fileInput" accept="image/*" class="hidden" @change="onFileChange" />
+            <button
+              type="button"
+              id="form-foto-resep"
+              class="relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all hover:opacity-80"
+              :style="form.gambar ? 'border-color:#4ED7F1;' : 'border-style:dashed; border-color:#d1d5db; background:#f9fafb;'"
+              :disabled="uploadLoading"
+              @click="fileInput?.click()"
+            >
+              <img v-if="form.gambar" :src="form.gambar" class="w-full h-full object-cover" />
+              <div v-else class="w-full h-full flex flex-col items-center justify-center gap-1">
+                <span class="text-2xl">📷</span>
+                <span class="text-xs text-gray-400">Foto</span>
               </div>
-              <div class="flex-1 space-y-1">
-                <input type="file" ref="fileInput" accept="image/*" class="hidden" @change="onFileChange" />
-                <UButton color="neutral" variant="outline" block :loading="uploadLoading" icon="i-heroicons-photo" @click="fileInput?.click()">
-                  {{ uploadLoading ? 'Mengupload...' : 'Pilih Foto' }}
-                </UButton>
-                <p v-if="form.gambar" class="text-xs text-sky-500 truncate">{{ form.gambar }}</p>
-                <p class="text-xs text-gray-400">JPG, PNG, WebP. Dikompres otomatis & disimpan di database.</p>
+              <!-- Loading overlay -->
+              <div v-if="uploadLoading" class="absolute inset-0 bg-white/80 flex items-center justify-center">
+                <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 text-sky-500 animate-spin" />
               </div>
-            </div>
-          </UFormField>
+              <!-- Edit overlay saat sudah ada foto -->
+              <div v-if="form.gambar && !uploadLoading" class="absolute inset-0 bg-black/0 hover:bg-black/30 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
+                <UIcon name="i-heroicons-pencil-square" class="w-5 h-5 text-white" />
+              </div>
+            </button>
 
-          <div id="form-nama-resep" class="grid grid-cols-2 gap-3">
-            <UFormField label="Nama Menu" required>
-              <UInput v-model="form.nama" placeholder="cth: Brownies Coklat" class="w-full" />
-            </UFormField>
-            <UFormField label="Kategori" required>
-              <USelectMenu v-model="form.kategori" :items="kategoriItems" value-key="value" label-key="label" class="w-full" />
-            </UFormField>
+            <div id="form-nama-resep" class="flex-1 grid grid-cols-2 gap-3">
+              <UFormField label="Nama Menu" required>
+                <UInput v-model="form.nama" placeholder="cth: Brownies Coklat" class="w-full" />
+              </UFormField>
+              <UFormField label="Kategori" required>
+                <USelectMenu v-model="form.kategori" :items="kategoriItems" value-key="value" label-key="label" class="w-full" />
+              </UFormField>
+            </div>
           </div>
 
           <UFormField id="form-harga-resep" label="Harga Jual (Rp)" required>
